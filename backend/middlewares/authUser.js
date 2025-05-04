@@ -5,13 +5,13 @@ import jwt from 'jsonwebtoken'
 const authUser = async (req, res, next) => {
     try {
         const { token } = req.headers;
-        console.log(token)
+        // console.log(token)
         if(!token){
             return res.json({success: false, message: "Not authorized Login...."});
         }
 
         const tokenDecode = jwt.verify(token, process.env.JWT_SECRET);
-        console.log(tokenDecode);
+        // console.log(tokenDecode);
         req.userId = tokenDecode.id;
 
         next();

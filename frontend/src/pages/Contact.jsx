@@ -18,7 +18,7 @@ const Contact = () => {
                     <p className=" font-semibold text-lg text-gray-600">CAREERS AT PRESCRIPTO</p>
                     <p className=" text-gray-500">Learn more about our teams and job openings.</p>
                     
-                    <button className="border border-black px-8 py-4 text-sm hover:bg-black hover:text-white transition-all duration-500">Explore Jobs</button>
+                    <button className="border border-primary px-8 py-4 text-sm hover:bg-primary hover:text-white transition-all duration-500">Explore Jobs</button>
                 </div>
             </div>
         </div>
