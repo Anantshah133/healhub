@@ -45,7 +45,7 @@ const DoctorAppointments = () => {
                                     ? 'border-red-500' 
                                     : appointment.isCompleted 
                                         ? 'border-green-500' 
-                                        : 'border-primary'
+                                        : 'border-blue-500'
                             }`}
                         >
                             <div className="p-5">
@@ -55,7 +55,7 @@ const DoctorAppointments = () => {
                                             ? <span className="text-red-500">Cancelled</span>
                                             : appointment.isCompleted 
                                                 ? <span className="text-green-500">Completed</span>
-                                                : <span className="text-primary">Upcoming</span>
+                                                : <span className="text-blue-500">Upcoming</span>
                                         }
                                     </h3>
                                     <div className="text-sm bg-gray-100 px-3 py-1 rounded-full text-gray-800">
@@ -104,7 +104,7 @@ const DoctorAppointments = () => {
                                     <button 
                                         onClick={() => handleComplete(appointment._id)}
                                         disabled={loading}
-                                        className="flex-1 py-3 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors"
+                                        className="flex-1 py-3 flex items-center justify-center text-green-500 hover:bg-green-500 hover:text-white transition-colors"
                                     >
                                         <CheckCircle className="h-5 w-5 mr-1" />
                                         Complete
