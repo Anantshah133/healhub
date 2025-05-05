@@ -17,8 +17,8 @@ const TopDoctors = () => {
                     <div onClick={() => {
                         navigate(`/appointment/${item._id}`)
                         scrollTo(0, 0);
-                    }} className="border border-blue-200 overflow-hidden rounded-xl cursor-pointer hover:translate-y-[-10px] transition-all duration-300" key={idx}>
-                        <img className="bg-blue-50 w-full" src={item.image} alt={item.name} />
+                    }} className="border border-blue-200 overflow-hidden rounded-xl cursor-pointer hover:translate-y-[-10px] transition-all duration-300 group" key={idx}>
+                        <img className="bg-green-100 group-hover:bg-primary transition-all duration-500 w-full" src={item.image} alt={item.name} />
                         <div className="p-4">
                             <div className="flex items-center gap-2 text-sm text-center">
                                 {item.available ? <>

@@ -25,15 +25,17 @@ const Login = () => {
                 if (data.success) {
                     localStorage.setItem("token", data.token);
                     setToken(data.token);
+                    toast.success("Account Created Successfully....");
                 } else {
                     toast.error(data.message);
                 }
             } else {
                 const { data } = await axios.post(`${backendUrl}/api/user/login`, { password, email });
-
+                
                 if (data.success) {
                     localStorage.setItem("token", data.token);
                     setToken(data.token);
+                    toast.success("Logged In Successfully....");
                 } else {
                     toast.error(data.message);
                 }

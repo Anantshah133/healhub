@@ -109,28 +109,28 @@ const appointmentCancel = async (req, res) => {
     try {
         const { appointmentID } = req.body;
         const appointmentData = await appointmentModel.findById(appointmentID);
-        
+
         if (!appointmentData) {
             return res.json({ success: false, message: "Appointment not found." });
         }
-        
+
         await appointmentModel.findByIdAndUpdate(appointmentID, { cancelled: true });
-        
+
         const { docId, slotDate, slotTime } = appointmentData;
         const doctorData = await doctorModel.findById(docId);
-        
+
         if (doctorData && doctorData.slots_booked && doctorData.slots_booked[slotDate]) {
-            let slots_booked = {...doctorData.slots_booked};
+            let slots_booked = { ...doctorData.slots_booked };
             slots_booked[slotDate] = slots_booked[slotDate].filter(time => time !== slotTime);
-            
+
             // If the array is empty, clean it up
             if (slots_booked[slotDate].length === 0) {
                 delete slots_booked[slotDate];
             }
-            
+
             await doctorModel.findByIdAndUpdate(docId, { slots_booked });
         }
-        
+
         res.json({ success: true, message: 'Appointment Cancelled Successfully.' });
     } catch (err) {
         console.log(err);
@@ -151,11 +151,34 @@ const adminDashboard = async (req, res) => {
             latestAppointments: appointments.reverse().slice(0, 5),
         };
 
-        res.json({success: true, dashData});
+        res.json({ success: true, dashData });
     } catch (err) {
         console.log(err);
-        res.json({ success: false, message: err.message});
+        res.json({ success: false, message: err.message });
     }
 }
 
-export { addDoctor, loginAdmin, allDoctors, appointmentsAdmin, appointmentCancel, adminDashboard };
+const deleteDoctor = async (req, res) => {
+    try {
+        const { docId } = req.body;
+
+        // Check if the doctor exists
+        const doctor = await doctorModel.findById(docId);
+        if (!doctor) {
+            return res.json({ success: false, message: "Doctor not found" });
+        }
+
+        // Delete all appointments associated with this doctor
+        await appointmentModel.deleteMany({ docId });
+
+        // Delete the doctor
+        await doctorModel.findByIdAndDelete(docId);
+
+        res.json({ success: true, message: "Doctor deleted successfully...." });
+    } catch (err) {
+        console.log(err);
+        res.json({ success: false, message: err.message });
+    }
+};
+
+export { addDoctor, loginAdmin, allDoctors, appointmentsAdmin, appointmentCancel, adminDashboard, deleteDoctor };

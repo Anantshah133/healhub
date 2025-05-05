@@ -70,7 +70,7 @@ const appointmentComplete = async (req, res) => {
         const apponitmentData = await appointmentModel.findById(appointmentId)
         console.log(apponitmentData, docId);
         if (apponitmentData && apponitmentData.docId === docId) {
-            await appointmentModel.findByIdAndUpdate(appointmentId, { isCompleted: true });
+            await appointmentModel.findByIdAndUpdate(appointmentId, { isCompleted: true, payment: true });
             return res.json({ success: true, message: "Appointment Completed Successfully..." });
         } else {
             return res.json({ success: false, message: "Mark Failed..." });

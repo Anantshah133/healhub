@@ -94,7 +94,7 @@ const DoctorAppointments = () => {
                                 
                                 <div className="flex items-center text-sm">
                                     <div className={`mr-2 h-2.5 w-2.5 rounded-full ${appointment.payment ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                                    <span>{appointment.payment ? 'Payment Received' : 'Payment Pending'}</span>
+                                    <span>{appointment.payment ? 'Payment Done' : 'Payment Pending'}</span>
                                 </div>
                             </div>
                             

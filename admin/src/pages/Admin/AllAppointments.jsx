@@ -148,8 +148,8 @@ const AllAppointments = () => {
                                             ${appointment.amount}
                                         </div>
                                         <div className='flex items-center text-sm text-gray-500'>
-                                            <div className={`mr-1 h-2.5 w-2.5 rounded-full ${appointment.payment ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                                            {appointment.payment ? 'Paid' : 'Pending'}
+                                            <div className={`mr-1 h-2.5 w-2.5 rounded-full ${appointment.payment ? 'bg-green-500' : appointment.cancelled ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
+                                            {appointment.payment ? 'Paid' : appointment.cancelled ? 'Cancelled' : 'Pending'}
                                         </div>
                                     </td>
                                     <td className='px-6 py-4 whitespace-nowrap'>
