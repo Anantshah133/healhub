@@ -5,6 +5,7 @@ import { assets } from "../assets/assets";
 import RelatedDoctors from "../components/RelatedDoctors";
 import { toast } from "react-toastify";
 import axios from "axios";
+import AvailabilityBadge from "../components/AvailabilityBadge";
 
 const Appointment = () => {
     const { docId } = useParams();
@@ -212,6 +213,7 @@ const Appointment = () => {
                         <p className="text-sm text-gray-500 max-w-[700px] mt-1">{docInfo.about}</p>
                     </div>
                     <p className="text-gray-500 font-medium mt-4">Appointment Fee : <span className="text-gray-700">${docInfo.fees}</span></p>
+                    <AvailabilityBadge isAvailable={docInfo.available} />
                 </div>
             </div>
             {/* ---------- Booking Slots ---------- */}

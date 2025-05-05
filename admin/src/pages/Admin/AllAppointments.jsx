@@ -171,9 +171,9 @@ const AllAppointments = () => {
                                         <div className='flex justify-start space-x-2'>
                                             {!appointment.cancelled && !appointment.isCompleted && (
                                                 <>
-                                                    <button className='text-primary hover:text-primary-dark transition-colors' title='Mark as completed'>
+                                                    {/* <button className='text-primary hover:text-primary-dark transition-colors' title='Mark as completed'>
                                                         <CheckCircle className='w-5 h-5' />
-                                                    </button>
+                                                    </button> */}
                                                     
                                                     <button onClick={() => cancelAppointment(appointment._id)} className='text-red-500 hover:text-red-700 transition-colors' title='Cancel appointment' >
                                                         <XCircle className='w-5 h-5' />
@@ -181,9 +181,9 @@ const AllAppointments = () => {
                                                 </>
                                             )}
                                             {
-                                                appointment.cancelled && (
+                                                appointment.cancelled || appointment.isCompleted ? (
                                                     <p className='text-2xl'>-</p>
-                                                )
+                                                ) : ('')
                                             }
                                         </div>
                                     </td>
