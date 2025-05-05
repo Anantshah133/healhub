@@ -119,22 +119,50 @@ const doctorDashboard = async (req, res) => {
         let patients = [];
 
         appointments.map((item) => {
-            if(!patients.includes(item.userId)){
+            if (!patients.includes(item.userId)) {
                 patients.push(item.userId);
             }
         })
 
         const dashData = {
-            earnings, 
+            earnings,
             appointments: appointments.length,
             patients: patients.length,
             latestAppointments: appointments.reverse(0, 5)
         }
 
-        res.json({success: true, dashData});
+        res.json({ success: true, dashData });
     } catch (err) {
-
+        console.log(err)
+        res.json({ success: false, message: err.message });
     }
 }
 
-export { changeAvailability, doctorList, loginDoctor, appointmentsDoctor, appointmentComplete, appointmentCancel, doctorDashboard };
+// API to get the single doctors profile data
+const doctorProfile = async (req, res) => {
+    try {
+        const docId = req.docId;
+        const profileData = await doctorModel.findById(docId).select('-password');
+
+        res.json({ success: true, profileData });
+    } catch (err) {
+        console.log(err)
+        res.json({ success: false, message: err.message });
+    }
+}
+
+// API to update the single doctors profile data
+const updateDoctorProfile = async (req, res) => {
+    try {
+        const docId = req.docId;
+        const { fees, address, available } = req.body;
+
+        await doctorModel.findByIdAndUpdate(docId, { fees, address, available });
+        res.json({ success: true, messgae: "Profile Updated....." });
+    } catch (err) {
+        console.log(err)
+        res.json({ success: false, message: err.message });
+    }
+}
+
+export { changeAvailability, doctorList, loginDoctor, appointmentsDoctor, appointmentComplete, appointmentCancel, doctorDashboard, doctorProfile, updateDoctorProfile };
