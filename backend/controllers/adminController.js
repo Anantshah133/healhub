@@ -4,6 +4,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import jwt from 'jsonwebtoken';
 import doctorModel from '../models/doctorModel.js'
 import appointmentModel from '../models/appointmentModel.js';
+import userModel from '../models/userModel.js';
 
 // API for adding a new Doctor
 const addDoctor = async (req, res) => {
@@ -104,4 +105,57 @@ const appointmentsAdmin = async (req, res) => {
     }
 }
 
-export { addDoctor, loginAdmin, allDoctors, appointmentsAdmin };
+const appointmentCancel = async (req, res) => {
+    try {
+        const { appointmentID } = req.body;
+        const appointmentData = await appointmentModel.findById(appointmentID);
+        
+        if (!appointmentData) {
+            return res.json({ success: false, message: "Appointment not found." });
+        }
+        
+        await appointmentModel.findByIdAndUpdate(appointmentID, { cancelled: true });
+        
+        const { docId, slotDate, slotTime } = appointmentData;
+        const doctorData = await doctorModel.findById(docId);
+        
+        if (doctorData && doctorData.slots_booked && doctorData.slots_booked[slotDate]) {
+            let slots_booked = {...doctorData.slots_booked};
+            slots_booked[slotDate] = slots_booked[slotDate].filter(time => time !== slotTime);
+            
+            // If the array is empty, clean it up
+            if (slots_booked[slotDate].length === 0) {
+                delete slots_booked[slotDate];
+            }
+            
+            await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+        }
+        
+        res.json({ success: true, message: 'Appointment Cancelled Successfully.' });
+    } catch (err) {
+        console.log(err);
+        res.json({ success: false, message: err.message || "Error cancelling appointment" });
+    }
+};
+
+const adminDashboard = async (req, res) => {
+    try {
+        const doctors = await doctorModel.find({});
+        const users = await userModel.find({});
+        const appointments = await appointmentModel.find({});
+
+        const dashData = {
+            doctors: doctors.length,
+            appointments: appointments.length,
+            patients: users.length,
+            latestAppointments: appointments.reverse().slice(0, 5),
+        };
+
+        res.json({success: true, dashData});
+    } catch (err) {
+        console.log(err);
+        res.json({ success: false, message: err.message});
+    }
+}
+
+export { addDoctor, loginAdmin, allDoctors, appointmentsAdmin, appointmentCancel, adminDashboard };

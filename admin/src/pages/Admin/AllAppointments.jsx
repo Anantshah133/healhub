@@ -3,7 +3,7 @@ import { AdminContext } from '../../context/AdminContext';
 import { Search, User, UserCog, Eye, XCircle, CheckCircle, CreditCard } from 'lucide-react';
 
 const AllAppointments = () => {
-    const { aToken, appointments, getAllAppointments } = useContext(AdminContext);
+    const { aToken, appointments, getAllAppointments, cancelAppointment } = useContext(AdminContext);
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredAppointments, setFilteredAppointments] = useState([]);
 
@@ -69,6 +69,9 @@ const AllAppointments = () => {
                             </th>
                             <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                                 Amount
+                            </th>
+                            <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                                Status
                             </th>
                             <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                                 Actions
@@ -149,6 +152,21 @@ const AllAppointments = () => {
                                             {appointment.payment ? 'Paid' : 'Pending'}
                                         </div>
                                     </td>
+                                    <td className='px-6 py-4 whitespace-nowrap'>
+                                        {appointment.cancelled ? (
+                                            <span className='px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800'>
+                                                Cancelled
+                                            </span>
+                                        ) : appointment.isCompleted ? (
+                                            <span className='px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800'>
+                                                Completed
+                                            </span>
+                                        ) : (
+                                            <span className='px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800'>
+                                                Upcoming
+                                            </span>
+                                        )}
+                                    </td>
                                     <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
                                         <div className='flex justify-start space-x-2'>
                                             {!appointment.cancelled && !appointment.isCompleted && (
@@ -157,11 +175,16 @@ const AllAppointments = () => {
                                                         <CheckCircle className='w-5 h-5' />
                                                     </button>
                                                     
-                                                    <button className='text-red-500 hover:text-red-700 transition-colors' title='Cancel appointment' >
+                                                    <button onClick={() => cancelAppointment(appointment._id)} className='text-red-500 hover:text-red-700 transition-colors' title='Cancel appointment' >
                                                         <XCircle className='w-5 h-5' />
                                                     </button>
                                                 </>
                                             )}
+                                            {
+                                                appointment.cancelled && (
+                                                    <p className='text-2xl'>-</p>
+                                                )
+                                            }
                                         </div>
                                     </td>
                                 </tr>

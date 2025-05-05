@@ -39,6 +39,20 @@ const AdminContextProvider = (props) => {
         }
     }
 
+    const cancelAppointment = async (appointmentID) => {
+        try {
+            const { data } = await axios.post(`${backendUrl}/api/admin/cancel-appointment`, {appointmentID}, {headers: {aToken}});
+            if(data.success){
+                toast.success(data.message);
+                getAllAppointments();
+            } else {
+                toast.error(data.message);
+            }
+        } catch (err) {
+            toast.error(err.message);
+        }
+    }
+
     const getAllAppointments = async () => {
         try {
             const { data } = await axios.get(`${backendUrl}/api/admin/appointments`, {headers: {aToken}});
@@ -54,7 +68,7 @@ const AdminContextProvider = (props) => {
 
     const value = {
         aToken, setAToken, backendUrl, doctors, getAllDoctors, changeAvailability,
-        appointments, setAppointments, getAllAppointments
+        appointments, setAppointments, getAllAppointments, cancelAppointment
     }
     return (
         <AdminContext.Provider value={value}>
