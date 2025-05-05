@@ -10,6 +10,7 @@ const DoctorContextProvider = (props) => {
     const [dToken, setDToken] = useState(localStorage.getItem('dToken') || '');
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [dashData, setDashData] = useState(false);
     
     // Use useCallback to memoize the function
     const getAppointments = useCallback(async () => {
@@ -77,6 +78,25 @@ const DoctorContextProvider = (props) => {
         }
     }, [backendUrl, dToken, getAppointments]);
 
+    // function to get the dashboard data
+    const getDashData = async () => {
+        try {
+            const { data } = await axios.get(
+                `${backendUrl}/api/doctor/dashboard`, 
+                {headers: {dToken}}
+            );
+            if (data.success) {
+                setDashData(data.dashData); // Refresh appointments
+                console.log(data.dashData);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error(err.message || 'Failed to cancel appointment');
+        }
+    }
+
     const value = { 
         dToken, 
         setDToken, 
@@ -87,7 +107,8 @@ const DoctorContextProvider = (props) => {
         loading, 
         setLoading, 
         handleComplete, 
-        handleCancel 
+        handleCancel, 
+        dashData, setDashData, getDashData
     };
 
     return (

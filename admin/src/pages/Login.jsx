@@ -4,41 +4,45 @@ import { AdminContext } from "../context/AdminContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { DoctorContext } from "../context/DoctorContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
     const [state, setState] = useState('Admin');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const {setAToken, backendUrl} = useContext(AdminContext);
-    const {setDToken} = useContext(DoctorContext);
+    const { setAToken, backendUrl } = useContext(AdminContext);
+    const { setDToken } = useContext(DoctorContext);
+
+    const navigate = useNavigate();
 
     const onSubmitHandler = async (event) => {
         event.preventDefault();
 
         try {
-            if(state === 'Admin'){
-                const { data } = await axios.post(`${backendUrl}/api/admin/login`, {email, password});
+            if (state === 'Admin') {
+                const { data } = await axios.post(`${backendUrl}/api/admin/login`, { email, password });
 
-                if(data.success){
+                if (data.success) {
                     localStorage.setItem('aToken', data.token);
                     setAToken(data.token);
+                    navigate('/admin-dashboard');
                 } else {
                     toast.error(data.message);
                 }
             } else {
-                const { data } = await axios.post(`${backendUrl}/api/doctor/login`, {email, password});
-
-                if(data.success){
+                const { data } = await axios.post(`${backendUrl}/api/doctor/login`, { email, password });
+                
+                if (data.success) {
                     localStorage.setItem('dToken', data.token);
                     setDToken(data.token);
-                    console.log(data.token);
+                    navigate('/doctor-dashboard');
                 } else {
                     toast.error(data.message);
                 }
             }
         } catch (err) {
-            
+
         }
     }
 
@@ -63,8 +67,8 @@ const Login = () => {
 
                 {
                     state === 'Admin'
-                    ? <p>Doctor Login ? <span className="text-primary underline cursor-pointer" onClick={() => setState('Doctor')}>Click Here</span> </p>
-                    : <p>Admin Login ? <span className="text-primary underline cursor-pointer" onClick={() => setState('Admin')}>Click Here</span> </p>
+                        ? <p>Doctor Login ? <span className="text-primary underline cursor-pointer" onClick={() => setState('Doctor')}>Click Here</span> </p>
+                        : <p>Admin Login ? <span className="text-primary underline cursor-pointer" onClick={() => setState('Admin')}>Click Here</span> </p>
                 }
             </div>
         </form>
