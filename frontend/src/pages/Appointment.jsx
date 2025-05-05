@@ -15,6 +15,7 @@ const Appointment = () => {
     const [docSlots, setDocSlots] = useState([]);
     const [slotIndex, setSlotIndex] = useState(0);
     const [slotTime, setSlotTime] = useState('');
+    const [selectedDate, setSelectedDate] = useState('');
 
     // Find doctor info from doctors array when docId or doctors change
     useEffect(() => {
@@ -26,72 +27,100 @@ const Appointment = () => {
         }
     }, [doctors, docId]);
 
-    // Generate available slots once when component mounts
     useEffect(() => {
         if (docInfo) {
             generateAvailableSlots();
+            setSlotTime('');
         }
     }, [docInfo]);
+
+    // Helper function to format dates as YYYY-MM-DD in local timezone
+    const formatDateToYYYYMMDD = (date) => {
+        const year = date.getFullYear();
+        // Month is 0-indexed in JS, so add 1 and pad with 0 if needed
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        // Day of month, padded with 0 if needed
+        const day = String(date.getDate()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}`;
+    };
 
     const generateAvailableSlots = () => {
         let today = new Date();
         today.setHours(0, 0, 0, 0); // Reset time to start of the day
-
         let allSlots = [];
+        
+        // Store date objects for each day for reference
+        let dateMappings = [];
+        
         for (let i = 0; i < 7; i++) {
             let currentDate = new Date(today);
             currentDate.setDate(today.getDate() + i);
-
-            // Format the date as YYYY-MM-DD for checking against doctor's booked slots
-            const dateString = currentDate.toISOString().split('T')[0];
-
+            
+            // Format the date as YYYY-MM-DD using local timezone instead of UTC
+            const dateString = formatDateToYYYYMMDD(currentDate);
+            
+            // Store the day's date information
+            dateMappings.push({
+                index: i,
+                dateObj: new Date(currentDate),
+                dateString: dateString
+            });
+            
             let endTime = new Date(currentDate);
             endTime.setHours(21, 0, 0, 0); // End time fixed at 9 PM
-
-            currentDate.setHours(10);
-            currentDate.setMinutes(0);
-
+            
+            // Reset currentDate to morning for time slots
+            let slotTime = new Date(currentDate);
+            slotTime.setHours(10);
+            slotTime.setMinutes(0);
+            
             let timeSlots = [];
-            while (currentDate < endTime) {
-                let formattedTime = currentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
+            
+            while (slotTime < endTime) {
+                // Use a consistent time format
+                let formattedTime = slotTime.toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true // Ensure 12-hour format with AM/PM
+                });
+                
                 // Check if this specific date and time slot is available
                 const isSlotAvailable = isTimeSlotAvailable(dateString, formattedTime);
-
+                
                 // Only add available slots
                 if (isSlotAvailable) {
                     timeSlots.push({
-                        datetime: new Date(currentDate),
+                        datetime: new Date(slotTime),
                         time: formattedTime,
                         date: dateString // Store the date string for later reference
                     });
                 }
-
-                currentDate.setMinutes(currentDate.getMinutes() + 30);
+                
+                slotTime.setMinutes(slotTime.getMinutes() + 30);
             }
-
+            
             allSlots.push(timeSlots);
         }
-
+        
         setDocSlots(allSlots);
+        
+        // Set default selected date when slots are generated
+        if (allSlots.length > 0 && allSlots[0].length > 0) {
+            setSelectedDate(allSlots[0][0].date);
+        }
+        
+        console.log("Generated date mappings:", dateMappings);
     };
 
-    // Helper function to check if a time slot is available
     const isTimeSlotAvailable = (dateString, timeString) => {
-        // If doctor info isn't available yet, consider all slots available
         if (!docInfo || !docInfo.slots_booked) {
             return true;
         }
-
-        // Check if the doctor has booked slots for this specific date
         const bookedSlotsForDate = docInfo.slots_booked[dateString];
-
-        // If no booked slots for this date, all slots are available
         if (!bookedSlotsForDate || !Array.isArray(bookedSlotsForDate)) {
             return true;
         }
-
-        // Check if this specific time is in the booked slots array for this specific date
         return !bookedSlotsForDate.includes(timeString);
     };
 
@@ -100,37 +129,65 @@ const Appointment = () => {
             toast.warn('Login to book appointment....');
             return navigate('/login');
         }
-
+        
         if (!slotTime) {
             toast.warn('Please select a time slot');
             return;
         }
-
-        // Get the actual selected date from the selected slot
-        const selectedDate = docSlots[slotIndex][0]?.date || 
-                           docSlots[slotIndex][0]?.datetime.toISOString().split('T')[0];
-
-        try {
-            const { data } = await axios.post(
-                `${backendUrl}/api/user/book-appointment`,
-                {
-                    docId,
-                    slotDate: selectedDate,
-                    slotTime
-                },
-                { headers: { token } }
-            );
-
-            if (data.success) {
-                toast.success(data.message);
-                getDoctorsData(); // Refresh doctor data to get updated booked slots
-                navigate('/my-appointments');
-            } else {
-                toast.error(data.message);
+        
+        // Use the selectedDate state that's updated whenever the day is changed
+        if (!selectedDate) {
+            toast.warn('Invalid date selection');
+            return;
+        }
+        
+        // Get the correct date for the selected day
+        if (docSlots.length > 0 && docSlots[slotIndex] && docSlots[slotIndex].length > 0) {
+            const correctDate = docSlots[slotIndex][0].date;
+            
+            // Log for debugging
+            console.log("Booking appointment for day index:", slotIndex);
+            console.log("Date from slot:", correctDate);
+            console.log("Currently selected date:", selectedDate);
+            
+            try {
+                const { data } = await axios.post(
+                    `${backendUrl}/api/user/book-appointment`,
+                    {
+                        docId,
+                        slotDate: correctDate, // Always use the date from the selected day
+                        slotTime
+                    },
+                    { headers: { token } }
+                );
+                
+                if (data.success) {
+                    toast.success(data.message);
+                    getDoctorsData(); // Refresh doctor data to get updated booked slots
+                    navigate('/my-appointments');
+                } else {
+                    toast.error(data.message);
+                }
+            } catch (err) {
+                console.log(err);
+                toast.error(err.message || 'Failed to book appointment');
             }
-        } catch (err) {
-            console.log(err);
-            toast.error(err.message || 'Failed to book appointment');
+        } else {
+            toast.error('No available slots for the selected day');
+        }
+    };
+    
+    // Handle day selection with one centralized function for consistency
+    const handleDaySelect = (idx, slots) => {
+        setSlotIndex(idx);
+        // Reset time selection when changing day
+        setSlotTime('');
+        
+        // Ensure the correct date is selected
+        if (slots.length > 0) {
+            const newSelectedDate = slots[0].date;
+            setSelectedDate(newSelectedDate);
+            console.log(`Selected date updated to: ${newSelectedDate} for day index: ${idx}`);
         }
     };
 
@@ -161,20 +218,41 @@ const Appointment = () => {
             <div className="sm:ml-72 sm:pl-4 mt-4 font-medium text-gray-700">
                 <p>Booking Slots</p>
                 <div className="flex gap-3 items-center w-full overflow-x-scroll mt-4">
-                    {docSlots.length > 0 && docSlots.map((item, idx) => (
-                        <div onClick={() => setSlotIndex(idx)} key={idx} className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${slotIndex === idx ? "bg-primary text-white" : "borderz border-gray-200"}`}>
-                            <p>{item.length > 0 && daysOfWeek[item[0].datetime.getDay()]}</p>
-                            <p>{item.length > 0 && item[0].datetime.getDate()}</p>
-                        </div>
-                    ))}
+                    {docSlots.length > 0 && docSlots.map((slots, idx) => {
+                        // Only render if we have slots for this day
+                        if (slots.length === 0) return null;
+                        
+                        const dayDate = slots[0].datetime;
+                        return (
+                            <div 
+                                onClick={() => handleDaySelect(idx, slots)} 
+                                key={idx} 
+                                className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${slotIndex === idx ? "bg-primary text-white" : "border border-gray-200"}`}
+                            >
+                                <p>{daysOfWeek[dayDate.getDay()]}</p>
+                                <p>{dayDate.getDate()}</p>
+                            </div>
+                        );
+                    })}
                 </div>
                 <div className="flex items-center gap-3 w-full overflow-x-scroll mt-4">
                     {docSlots.length > 0 && docSlots[slotIndex] && docSlots[slotIndex].map((item, idx) => (
-                        <p onClick={() => setSlotTime(item.time)} key={idx} className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer ${item.time === slotTime ? 'bg-primary text-white' : 'text-gray-400 border border-gray-300'}`}>
+                        <p 
+                            onClick={() => setSlotTime(item.time)} 
+                            key={idx} 
+                            className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer ${item.time === slotTime ? 'bg-primary text-white' : 'text-gray-400 border border-gray-300'}`}
+                        >
                             {item.time.toLowerCase()}
                         </p>
                     ))}
                 </div>
+
+                {/* Debug info that shows selected date and time */}
+                {selectedDate && slotTime && (
+                    <p className="text-sm text-gray-500 mt-2">
+                        Selected: {selectedDate} at {slotTime}
+                    </p>
+                )}
 
                 <button onClick={bookAppointment} className="bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6">Book An Appointment</button>
             </div>
