@@ -48,6 +48,11 @@ const Navbar = () => {
                             <hr className="border-none outline-none h-0.5 bg-primary w/3 m-auto hidden" />
                         </li>
                     </NavLink>
+                    <a href="http://localhost:5174/" target="_blank">
+                        <li className="border px-5 text-xs py-1.5 rounded-full">
+                            Admin Panel
+                        </li>
+                    </a>
                 </ul>
                 <div className="flex items-center gap-4">
                     {
