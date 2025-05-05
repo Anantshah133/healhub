@@ -12,7 +12,7 @@ const SpecialityMenu = () => {
             <div className="speciality-menu flex justify-center gap-6 pt-5 w-full overflow-scroll">
                 {specialityData.map((item, idx) => (
                     <Link onClick={() => scrollTo(0, 0)} className="flex flex-col items-center cursor-pointer flex-shrink-0 hover:translate-y-[-10px] transition-all duration-300" key={idx} to={`/doctors/${item.speciality}`}>
-                        <img className="w-16 sm:w-24 mb-2" src={item.image} alt="" />
+                        <img className="w-20 sm:w-24 mb-2" src={item.image} alt="" />
                         <p>{item.speciality}</p>
                     </Link>
                 ))}
