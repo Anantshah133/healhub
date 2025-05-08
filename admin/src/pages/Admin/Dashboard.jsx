@@ -5,14 +5,12 @@ import { AdminContext } from '../../context/AdminContext';
 const Dashboard = () => {
     const { aToken, getDashboardData, dashData } = useContext(AdminContext);
 
-    // Fetch dashboard data when component mounts
     useEffect(() => {
         if (aToken) {
             getDashboardData();
         }
     }, [aToken, getDashboardData]);
 
-    // Create dynamic dashboard items using data from API
     const getDashboardItems = () => {
         if (!dashData) return [];
 
@@ -37,8 +35,6 @@ const Dashboard = () => {
             },
             {
                 title: "Revenue",
-                // Calculate estimated revenue (if not provided by API)
-                // Assuming $50 average per appointment for demo purposes
                 count: `$${(dashData.appointments || 0) * 50}`,
                 icon: <TrendingUp className="h-8 w-8 text-primary" />,
                 trend: "Estimated earnings"
